@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Code Explainer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>✨ AI Code Explainer</h1>
+        <p>Paste your code below and let Gemini 2.0 explain it to you.</p>
+        
+        <textarea id="code-input" placeholder="Paste your code here..."></textarea>
+        <button id="explain-btn">Explain Code</button>
+
+        <div id="result-container" class="hidden">
+            <h2>Explanation:</h2>
+            <div id="explanation-text"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('explain-btn').addEventListener('click', async () => {
+            const code = document.getElementById('code-input').value;
+            const btn = document.getElementById('explain-btn');
+            const resultDiv = document.getElementById('result-container');
+            const textDiv = document.getElementById('explanation-text');
+
+            if (!code) return alert("Please paste some code!");
+
+            btn.innerText = "Analyzing...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/explain', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code })
+                });
+                const data = await response.json();
+                
+                if (data.explanation) {
+                    textDiv.innerHTML = marked.parse(data.explanation);
+                    resultDiv.classList.remove('hidden');
+                } else {
+                    alert("Error: " + data.error);
+                }
+            } catch (err) {
+                alert("Failed to connect to server.");
+            } finally {
+                btn.innerText = "Explain Code";
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
